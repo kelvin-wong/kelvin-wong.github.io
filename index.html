@@ -11,14 +11,14 @@
         <input id="time" type="number" name="time" step="0.1"> minutes
         <input type="submit" value="GO">
     </form>
-    <audio id="alarm" src="https://www.youtube.com/audiolibrary_download?vid=3a762b34337b1782" preload="auto" autoplay="" volume="0"></audio>
+    <audio id="alarm" src="https://www.youtube.com/audiolibrary_download?vid=3a762b34337b1782" muted="" loop="" autoplay=""></audio>
     <button id="stop" style="display: none;">Stop</button>
     <script type="text/javascript">
         let time = 0;
 
         function done() {
             document.getElementById('clock').innerHTML = "DONE";
-            document.getElementById('alarm').volume = 1;
+            document.getElementById('alarm').muted = false;
             document.getElementById('stop').style.display = "block";
         }
 
@@ -60,10 +60,11 @@
             const stopBtn = document.getElementById('stop');
             stopBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                document.getElementById('alarm').pause();
+                document.getElementById('alarm').muted = true;
             });
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
+                document.getElementById('alarm').muted = true;
                 time = inputTxt.value * 60;
                 countdown();
             }, false);
