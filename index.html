@@ -1,10 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Kelvin</title>
-    <link rel="stylesheet" type="text/css" href="stylesheets/style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Workout Timer</title>
 </head>
 <body>
-    <script type="text/javascript" src="scripts/main.js"></script>
+    <p id="clock"></p>
+    <form>
+        <input id="time" type="number" name="time" step="0.1"> minutes
+        <input type="submit" value="GO">
+    </form>
+    <audio id="alarm" src="https://www.youtube.com/audiolibrary_download?vid=3a762b34337b1782" preload="auto"></audio>
+    <button id="stop" style="display: none;">Stop</button>
+    <script type="text/javascript">
+        let time = 0;
+
+        function done() {
+            document.getElementById('clock').innerHTML = "DONE";
+            document.getElementById('alarm').play();
+            document.getElementById('stop').style.display = "block";
+        }
+
+        function speak(value) {
+            const synth = window.speechSynthesis;
+            const voices = synth.getVoices();
+            let usVoice;
+            voices.forEach(function(voice) {
+                if (voice.lang.toLowerCase() === 'en-us') {
+                    usVoice = voice;
+                }
+            });
+            setTimeout(function() {
+                let utterThis = new SpeechSynthesisUtterance(value);
+                utterThis.voice = usVoice;
+                utterThis.pitch = 1.2;
+                utterThis.rate = 0.8;
+                synth.speak(utterThis);
+            }, 0);
+        }
+
+        function countdown() {
+            let x = setInterval(function() {
+                time -= 1;
+                document.getElementById('clock').innerHTML = time + " second";
+                if (time < 0) {
+                    clearInterval(x);
+                    done();
+                }
+                if ((time % 10 === 0 || time <= 5) && time > 0) {
+                    speak(time);
+                }
+            }, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function(e) {
+            const form = document.querySelector('form');
+            const inputTxt = document.getElementById('time');
+            const stopBtn = document.getElementById('stop');
+            stopBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('alarm').pause();
+            });
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                time = inputTxt.value * 60;
+                countdown();
+            }, false);
+        }, false);
+</script>
 </body>
 </html>
