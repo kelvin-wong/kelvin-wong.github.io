@@ -11,50 +11,56 @@
         <input id="time" type="number" name="time" step="0.1"> minutes
         <input type="submit" value="GO">
     </form>
-    <audio id="alarm" src="https://www.youtube.com/audiolibrary_download?vid=3a762b34337b1782" muted="" loop="" autoplay=""></audio>
+    <audio id="alarm" src="alarm.mp3" muted="" loop="" autoplay=""></audio>
     <button id="stop" style="display: none;">Stop</button>
     <script type="text/javascript">
-        let time = 0;
-
-        function done() {
-            document.getElementById('clock').innerHTML = "DONE";
-            document.getElementById('alarm').muted = false;
-            document.getElementById('stop').style.display = "block";
-        }
-
-        function speak(value) {
-            const synth = window.speechSynthesis;
-            const voices = synth.getVoices();
-            let usVoice;
-            voices.forEach(function(voice) {
-                if (voice.lang.toLowerCase() === 'en-us') {
-                    usVoice = voice;
-                }
-            });
-            setTimeout(function() {
-                let utterThis = new SpeechSynthesisUtterance(value);
-                utterThis.voice = usVoice;
-                utterThis.pitch = 1.2;
-                utterThis.rate = 0.8;
-                synth.speak(utterThis);
-            }, 0);
-        }
-
-        function countdown() {
-            let x = setInterval(function() {
-                time -= 1;
-                document.getElementById('clock').innerHTML = time + " second";
-                if (time < 0) {
-                    clearInterval(x);
-                    done();
-                }
-                if ((time % 10 === 0 || time <= 5) && time > 0) {
-                    speak(time);
-                }
-            }, 1000);
-        }
-
         document.addEventListener('DOMContentLoaded', function(e) {
+            let time = 0;
+
+            function done() {
+                document.getElementById('clock').innerHTML = "DONE";
+                document.getElementById('alarm').muted = false;
+                document.getElementById('stop').style.display = "block";
+            }
+
+            function speak(value, volume = 1) {
+                const synth = window.speechSynthesis;
+                const voices = synth.getVoices();
+                let voice;
+                voices.forEach(function(v) {
+                    if (v.lang.toLowerCase() === 'zh-hk') {
+                        voice = v;
+                    }
+                    if (voice === null && v.lang.toLowerCase() === 'en-us') {
+                        voice = v;
+                    }
+                });
+                setTimeout(function() {
+                    let utterThis = new SpeechSynthesisUtterance(value);
+                    utterThis.voice = voice;
+                    utterThis.pitch = 1.2;
+                    utterThis.rate = 0.8;
+                    utterThis.volume = volume;
+                    synth.speak(utterThis);
+                }, 0);
+            }
+
+            function countdown() {
+                let x = setInterval(function() {
+                    time -= 1;
+                    document.getElementById('clock').innerHTML = time + " second";
+                    if (time < 0) {
+                        clearInterval(x);
+                        done();
+                    }
+                    if ((time % 10 === 0 || time <= 5) && time > 0) {
+                        speak(time);
+                    }
+                }, 1000);
+            }
+
+            speak('1');
+
             const form = document.querySelector('form');
             const inputTxt = document.getElementById('time');
             const stopBtn = document.getElementById('stop');
@@ -69,6 +75,6 @@
                 countdown();
             }, false);
         }, false);
-</script>
+    </script>
 </body>
 </html>
