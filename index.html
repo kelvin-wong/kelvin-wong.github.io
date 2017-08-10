@@ -23,7 +23,7 @@
                 document.getElementById('stop').style.display = "block";
             }
 
-            function speak(value, volume = 1) {
+            function speak(value, volume) {
                 const synth = window.speechSynthesis;
                 const voices = synth.getVoices();
                 let voice;
