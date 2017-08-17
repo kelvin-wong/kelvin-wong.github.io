@@ -1,20 +1,28 @@
 <template>
   <section>
     <h1 class="title">{{ $store.state.timer }} seconds</h1>
-    <div class="field has-addons">
+    <div class="field">
       <div class="control">
-        <input class="input" type="number" v-model.number="$store.state.time" step="0.1" placeholder="minutes">
+        <input class="input is-large" type="number" v-model.number="$store.state.time" step="0.1" placeholder="minutes">
+      </div>
+    </div>
+    <div class="field is-grouped is-grouped-centered">
+      <div class="control">
+        <a class="button is-large is-primary" v-on:click="countdown">Go</a>
       </div>
       <div class="control">
-        <a id="go" class="button" v-on:click="countdown">GO</a>
+        <a class="button is-large is-warning" v-on:click="stop">Stop</a>
+      </div>
+      <div class="control">
+        <a class="button is-large is-danger" v-on:click="reset">Reset</a>
       </div>
     </div>
   </section>
 </template>
 
 <style>
-  .field.has-addons {
-    justify-content: center;
+  .button {
+    text-transform: uppercase;
   }
 </style>
 
@@ -29,12 +37,20 @@
       state: {
         timer: 0,
         time: null,
-        current: 0,
-        timeInterval: null
+        timeInterval: null,
+        audioBuffer: null,
+        bufferSource: null
       },
       mutations: {
         countdown (state) {
           state.timer--
+        },
+        reset (state) {
+          clearInterval(state.timeInterval)
+          state.timer = 0
+          state.time = null
+          state.timeInterval = null
+          state.bufferSource = null
         }
       },
       actions: {
@@ -44,31 +60,30 @@
             commit('countdown')
             if (state.timer === 0) {
               clearInterval(state.timeInterval)
-              dispatch('done')
+              dispatch('startAlarm')
             }
             if ((state.timer % 10 === 0 || state.timer <= 5) && state.timer > 0) {
               dispatch('speak')
             }
           }, 1000)
         },
-        done ({state}) {
-          // TODO
-          let context = new AudioContext()
-          let oscillator = context.createOscillator()
-          let volumeNode = context.createGain()
-          volumeNode.gain.value = 0.5
-          oscillator.type = 'sine'
-          oscillator.frequency.v1alue = 1000
-          oscillator.connect(volumeNode)
-          volumeNode.connect(context.destination)
-          for (let i = 0; i < 1000; i += 100) {
-            volumeNode.gain.setValueAtTime(0, i)
+        startAlarm ({state}) {
+          if (state.audioBuffer) {
+            let context = new AudioContext()
+            let bufferSource = context.createBufferSource()
+            bufferSource.buffer = state.audioBuffer
+            bufferSource.connect(context.destination)
+            bufferSource.start(0)
+            state.bufferSource = bufferSource
           }
-          for (let i = 100; i < 1000; i += 100) {
-            volumeNode.gain.setValueAtTime(1, i)
+        },
+        stopAlarm ({state}) {
+          if (state.bufferSource) {
+            state.bufferSource.stop(0)
           }
-          oscillator.start(0)
-          oscillator.stop(1000)
+        },
+        resetState ({commit}) {
+          commit('reset')
         },
         speak ({state}) {
           const synth = window.speechSynthesis
@@ -93,14 +108,35 @@
         }
       }
     }),
-    time: 0,
     head: {
       title: 'Workout Timer'
     },
     methods: {
       countdown: function () {
         this.$store.dispatch('startCount')
+      },
+      stop: function () {
+        this.$store.dispatch('stopAlarm')
+      },
+      reset: function () {
+        this.$store.dispatch('resetState')
       }
+    },
+    mounted () {
+      let context = new AudioContext()
+      let request = new XMLHttpRequest()
+      let that = this
+      request.open('GET', '/alarm.mp3', true)
+      request.responseType = 'arraybuffer'
+      request.onload = function () {
+        context.decodeAudioData(request.response, function (buffer) {
+          that.$store.state.audioBuffer = buffer
+          context.close()
+        }, function (err) {
+          console.dir(err)
+        })
+      }
+      request.send()
     }
   }
 </script>
