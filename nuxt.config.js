@@ -36,7 +36,8 @@ module.exports = {
       }
     }
   },
-  plugins: [
-    { src: '~plugins/ga.js', ssr: false }
+  modules: [
+    ['@nuxtjs/google-analytics', { ua: 'UA-104438969-1' }],
+    ['@nuxtjs/localtunnel', { subdomain: 'kelvin' }]
   ]
 }
