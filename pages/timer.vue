@@ -32,6 +32,8 @@
 
   if (process.env.BROWSER) {
     window.AudioContext = window.AudioContext || window.webkitAudioContext
+    window.speechSynthesis = window.speechSynthesis || window.SpeechSynthesis || window.webkitspeechSynthesis || window.webkitSpeechSynthesis
+    window.SpeechSynthesisUtterance = window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance
   }
 
   Vue.use(Vuex)
@@ -73,7 +75,7 @@
         },
         startAlarm ({state}) {
           if (state.audioBuffer) {
-            let context = new AudioContext()
+            let context = new window.AudioContext()
             let bufferSource = context.createBufferSource()
             let gainNode = context.createGain()
             gainNode.gain.value = 50
@@ -107,7 +109,7 @@
             }
           })
           setTimeout(function () {
-            let utterThis = new SpeechSynthesisUtterance(state.timer)
+            let utterThis = new window.SpeechSynthesisUtterance(state.timer)
             utterThis.voice = voice
             utterThis.pitch = 1.2
             utterThis.rate = 0.8
@@ -132,7 +134,7 @@
       }
     },
     mounted () {
-      let context = new AudioContext()
+      let context = new window.AudioContext()
       let request = new XMLHttpRequest()
       let that = this
       request.open('GET', '/alarm.mp3', true)
