@@ -30,6 +30,10 @@
   import Vue from 'vue'
   import Vuex from 'vuex'
 
+  if (process.env.BROWSER) {
+    window.AudioContext = window.AudioContext || window.webkitAudioContext
+  }
+
   Vue.use(Vuex)
 
   export default {
@@ -71,7 +75,11 @@
           if (state.audioBuffer) {
             let context = new AudioContext()
             let bufferSource = context.createBufferSource()
+            let gainNode = context.createGain()
+            gainNode.gain.value = 50
             bufferSource.buffer = state.audioBuffer
+            bufferSource.connect(gainNode)
+            gainNode.connect(context.destination)
             bufferSource.connect(context.destination)
             bufferSource.start(0)
             state.bufferSource = bufferSource
@@ -82,7 +90,8 @@
             state.bufferSource.stop(0)
           }
         },
-        resetState ({commit}) {
+        resetState ({commit, dispatch}) {
+          dispatch('stopAlarm')
           commit('reset')
         },
         speak ({state}) {
