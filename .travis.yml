@@ -4,6 +4,9 @@ node_js:
   - "6"
 cache:
   - yarn
+branches:
+  only:
+    - dev
 install:
   - yarn
 script:
