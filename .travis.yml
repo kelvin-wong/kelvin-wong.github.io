@@ -1,9 +1,13 @@
-language: node_js
-node_js: "6"
+language:
+  - node_js
+node_js:
+  - "6"
+cache:
+  - yarn
 install:
-  - npm install
+  - yarn
 script:
-  - npm run generate
+  - yarn generate
 deploy:
   provider: pages
   skip_cleanup: true
