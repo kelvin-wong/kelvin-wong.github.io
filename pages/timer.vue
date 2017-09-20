@@ -30,11 +30,7 @@
   import Vue from 'vue'
   import Vuex from 'vuex'
 
-  if (process.env.BROWSER) {
-    window.AudioContext = 'webkitAudioContext' in window ? window.webkitAudioContext : window.AudioContext
-    window.speechSynthesis = window.speechSynthesis || window.SpeechSynthesis || window.webkitspeechSynthesis || window.webkitSpeechSynthesis
-    window.SpeechSynthesisUtterance = window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance
-  }
+  const AudioConstructor = {}
 
   Vue.use(Vuex)
 
@@ -75,7 +71,7 @@
         },
         startAlarm ({state}) {
           if (state.audioBuffer) {
-            let context = new window.AudioContext()
+            let context = new AudioConstructor.AudioContext()
             let bufferSource = context.createBufferSource()
             let gainNode = context.createGain()
             gainNode.gain.value = 50
@@ -97,7 +93,7 @@
           commit('reset')
         },
         speak ({state}) {
-          const synth = window.speechSynthesis
+          const synth = AudioConstructor.speechSynthesis
           const voices = synth.getVoices()
           let voice
           voices.forEach(function (v) {
@@ -109,7 +105,7 @@
             }
           })
           setTimeout(function () {
-            let utterThis = new window.SpeechSynthesisUtterance(state.timer)
+            let utterThis = new AudioConstructor.SpeechSynthesisUtterance(state.timer)
             utterThis.voice = voice
             utterThis.pitch = 1.2
             utterThis.rate = 0.8
@@ -134,7 +130,11 @@
       }
     },
     mounted () {
-      let context = new window.AudioContext()
+      AudioConstructor.AudioContext = 'webkitAudioContext' in window ? window.webkitAudioContext : window.AudioContext
+      AudioConstructor.speechSynthesis = window.speechSynthesis || window.SpeechSynthesis || window.webkitspeechSynthesis || window.webkitSpeechSynthesis
+      AudioConstructor.SpeechSynthesisUtterance = window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance
+      console.log(AudioConstructor)
+      let context = new AudioConstructor.AudioContext()
       let request = new XMLHttpRequest()
       let that = this
       request.open('GET', '/alarm.mp3', true)
