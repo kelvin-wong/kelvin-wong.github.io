@@ -31,7 +31,7 @@
   import Vuex from 'vuex'
 
   if (process.env.BROWSER) {
-    window.AudioContext = window.AudioContext || window.webkitAudioContext
+    window.AudioContext = 'webkitAudioContext' in window ? window.webkitAudioContext : window.AudioContext
     window.speechSynthesis = window.speechSynthesis || window.SpeechSynthesis || window.webkitspeechSynthesis || window.webkitSpeechSynthesis
     window.SpeechSynthesisUtterance = window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance
   }
