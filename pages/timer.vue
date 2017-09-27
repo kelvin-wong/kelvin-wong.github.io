@@ -3,7 +3,15 @@
     <h1 class="title">{{ $store.state.timer }} seconds</h1>
     <div class="field">
       <div class="control">
-        <input class="input is-large" type="number" v-model.number="$store.state.time" step="0.1" placeholder="minutes">
+        <masked-input
+          class="input is-large"
+          type="text"
+          placeholder="0m00s"
+          v-model="$store.state.time"
+          :guide="true"
+          :mask="[/\d/, 'm', /\d/, /\d/, 's']"
+          placeholderChar="_">
+        </masked-input>
       </div>
     </div>
     <div class="field is-grouped is-grouped-centered">
@@ -30,6 +38,7 @@
 <script>
   import Vue from 'vue'
   import Vuex from 'vuex'
+  import MaskedInput from 'vue-text-mask'
 
   const AudioConstructor = {}
   let isSafari = false
@@ -37,10 +46,13 @@
   Vue.use(Vuex)
 
   export default {
+    components: {
+      MaskedInput
+    },
     store: new Vuex.Store({
       state: {
         timer: 0,
-        time: null,
+        time: '',
         timeInterval: null,
         audioBuffer: null,
         bufferSource: null
@@ -52,14 +64,16 @@
         reset (state) {
           clearInterval(state.timeInterval)
           state.timer = 0
-          state.time = null
+          state.time = ''
           state.timeInterval = null
           state.bufferSource = null
         }
       },
       actions: {
         startCount ({commit, state, dispatch}) {
-          state.timer = parseInt(state.time * 60)
+          let timeRegex = /(\d)m(\d+)s/g
+          let [, minutes, seconds] = timeRegex.exec(state.time)
+          state.timer = (parseInt(minutes) * 60) + parseInt(seconds)
           state.timeInterval = setInterval(function () {
             commit('countdown')
             if (state.timer === 0) {
