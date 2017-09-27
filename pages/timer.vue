@@ -16,6 +16,7 @@
       <div class="control">
         <a class="button is-large is-danger" v-on:click="reset">Reset</a>
       </div>
+      <a id="safari" class="hidden" v-on:click="speak"></a>
     </div>
   </section>
 </template>
@@ -31,6 +32,7 @@
   import Vuex from 'vuex'
 
   const AudioConstructor = {}
+  let isSafari = false
 
   Vue.use(Vuex)
 
@@ -65,7 +67,17 @@
               dispatch('startAlarm')
             }
             if ((state.timer % 10 === 0 || state.timer <= 5) && state.timer > 0) {
-              dispatch('speak')
+              if (isSafari) {
+                let event = new MouseEvent('click', {
+                  'view': window,
+                  'bubbles': true,
+                  'cancelable': true
+                })
+                let btn = document.getElementById('safari')
+                btn.dispatchEvent(event)
+              } else {
+                dispatch('speak')
+              }
             }
           }, 1000)
         },
@@ -93,7 +105,7 @@
           commit('reset')
         },
         speak ({state}) {
-          const synth = AudioConstructor.speechSynthesis
+          const synth = AudioConstructor.SpeechSynthesis
           const voices = synth.getVoices()
           let voice
           voices.forEach(function (v) {
@@ -127,13 +139,16 @@
       },
       reset: function () {
         this.$store.dispatch('resetState')
+      },
+      speak: function () {
+        this.$store.dispatch('speak')
       }
     },
     mounted () {
+      isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor)
       AudioConstructor.AudioContext = 'webkitAudioContext' in window ? window.webkitAudioContext : window.AudioContext
-      AudioConstructor.speechSynthesis = window.speechSynthesis || window.SpeechSynthesis || window.webkitspeechSynthesis || window.webkitSpeechSynthesis
+      AudioConstructor.SpeechSynthesis = window.speechSynthesis || window.SpeechSynthesis || window.webkitspeechSynthesis || window.webkitSpeechSynthesis
       AudioConstructor.SpeechSynthesisUtterance = window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance
-      console.log(AudioConstructor)
       let context = new AudioConstructor.AudioContext()
       let request = new XMLHttpRequest()
       let that = this
